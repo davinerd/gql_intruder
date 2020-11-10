@@ -4,6 +4,7 @@ import json
 import argparse
 import pathlib
 import os
+import sys
 from urllib.parse import urlparse
 from time import time
 
@@ -36,22 +37,25 @@ PAYLOADS_FOLDER = {
     'xss': "{}/xss/".format(ROOT_PAYLOAD_FOLDER)
 }
 
-parser = argparse.ArgumentParser()
-parser.add_argument("action")
-parser.add_argument("--key", required=True)
-parser.add_argument("--url", required=True)
-parser.add_argument("--schema", required=True)
-parser.add_argument("--attack", required=True, type=str, choices=list(PAYLOADS_FOLDER.keys()))
-parser.add_argument("--type", type=str)
-parser.add_argument("--max-threads", type=int)
-args = parser.parse_args()
+main_parser = argparse.ArgumentParser(add_help=False)
+main_parser.add_argument("--url", required=True)
+main_parser.add_argument("--max-threads", type=int)
 
-threads = args.max_threads if args.max_threads else MAX_WORKERS
-session = ElapsedFuturesSession(max_workers=threads)
+attack_argparser = argparse.ArgumentParser()
+attack_argparser.add_argument("--key", required=True)
+attack_argparser.add_argument("--schema", required=True)
+attack_argparser.add_argument("--attack", required=True, type=str, choices=list(PAYLOADS_FOLDER.keys()))
+attack_argparser.add_argument("--type", type=str)
+
+dump_argparser = argparse.ArgumentParser()
+
 introspection_query =  "query IntrospectionQuery{__schema{queryType{name}mutationType{name}subscriptionType{name}types{...FullType}directives{name description locations args{...InputValue}}}}fragment FullType on __Type{kind name description fields(includeDeprecated:true){name description args{...InputValue}type{...TypeRef}isDeprecated deprecationReason}inputFields{...InputValue}interfaces{...TypeRef}enumValues(includeDeprecated:true){name description isDeprecated deprecationReason}possibleTypes{...TypeRef}}fragment InputValue on __InputValue{name description type{...TypeRef}defaultValue}fragment TypeRef on __Type{kind name ofType{kind name ofType{kind name ofType{kind name ofType{kind name ofType{kind name ofType{kind name ofType{kind name}}}}}}}}"
 headers = {
     'Content-Type': 'application/json'
 }
+
+def build_argparse(parse_to_add):
+    return argparse.ArgumentParser(parents=[main_parser, parse_to_add], add_help=False)
 
 # Kudos to this individual: https://stackoverflow.com/a/835527
 # We want to go easy on this though...
@@ -67,7 +71,11 @@ def attack():
     futures = list()
     payloads = list()
 
-    with open(SCHEMA, 'r') as f:
+    if not os.path.isfile(args.schema):
+        print("Schema file {} not found!".format(args.schema))
+        return False
+
+    with open(args.schema, 'r') as f:
         schema = json.load(f)
 
     key_found = find_key(schema, args.key)
@@ -156,27 +164,36 @@ def edit_value(obj, key, value):
 
 
 VALID_COMMANDS = {
-    'attack': attack,
-    'dump': dump
+    'attack': {
+        'func': attack,
+        'args': attack_argparser
+    },
+    'dump': {
+        'func': dump,
+        'args': dump_argparser
+    }
 }
 
-action = VALID_COMMANDS.get(args.action, None)
+action = sys.argv[1]
+del sys.argv[1]
 
-if action is None:
-    print("Action not supported!")
+if action not in list(VALID_COMMANDS.keys()):
+    print("Action not supported")
     exit(1)
+
+parser = build_argparse(VALID_COMMANDS[action]['args'])
+
+args = parser.parse_args()
+
+threads = args.max_threads if args.max_threads else MAX_WORKERS
+session = ElapsedFuturesSession(max_workers=threads)
 
 GQL_ENDPOINT = parse_url(args.url)
 if GQL_ENDPOINT is None:
     print("URL {} is not valid!".format(args.url))
     exit(1)
 
-if not os.path.isfile(args.schema):
-    print("Schema file {} not found!".format(args.schema))
+if not VALID_COMMANDS[action]['func']():
     exit(1)
-
-SCHEMA = args.schema
-
-VALID_COMMANDS[args.action]()
 
 exit()
