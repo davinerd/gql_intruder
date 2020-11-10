@@ -1,4 +1,7 @@
 # Usage
+Currently there are only two available actitons: `attack` and `dump`.
+
+## attack
 To perform an SQL injection attack with payloads found in the `payloads/sqli` folder:
 
 ```
@@ -36,4 +39,9 @@ Where `schema.json` is in the following format:
   },
   "operationName": "addActionContact"
 }
+```
+## dump
+To dump a GraphQL schema via Introspection, just run:
+```
+$ python3 brute.py dump --url https://some.url/graphql
 ```
