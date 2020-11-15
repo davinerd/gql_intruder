@@ -14,7 +14,7 @@ def list_plugins():
 
 # Plugin syntax check + build valid command dict
 for importer, modname, ispkg in pkgutil.iter_modules(plugins.__path__):
-    module = __import__("plugins."+modname)
+    module = __import__("plugins.{0}.{0}".format(modname))
     my_class = getattr(module, modname.capitalize())
 
     if not 'CMD_NAME' in my_class.__dict__:

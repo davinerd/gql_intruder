@@ -1,2 +1,2 @@
-from plugins.intruder import Intruder
-from plugins.dump import Dump
+from plugins.intruder.intruder import Intruder
+from plugins.dump.dump import Dump

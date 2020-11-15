@@ -1,4 +1,3 @@
-import pathlib
 import os
 import utils
 import json
@@ -31,9 +30,9 @@ class ElapsedFuturesSession(FuturesSession):
         return super(ElapsedFuturesSession, self).request(method, url, hooks=hooks, *args, **kwargs)
 
 
-
 class Intruder(Plugin):
-    ROOT_PAYLOAD_FOLDER = "{}/payloads".format(pathlib.Path().absolute())
+    MODULE_DIR = os.path.dirname(__file__)
+    ROOT_PAYLOAD_FOLDER = "{}/payloads".format(MODULE_DIR)
 
     PAYLOADS_FOLDER = {
         'sqli': "{}/sqli/".format(ROOT_PAYLOAD_FOLDER),
