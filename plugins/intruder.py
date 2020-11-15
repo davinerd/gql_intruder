@@ -40,7 +40,7 @@ class Intruder(Plugin):
         'xss': "{}/xss/".format(ROOT_PAYLOAD_FOLDER)
     }
 
-    CMD_NAME = "attack"
+    CMD_NAME = "intruder"
 
     ENDPOINT = None
     SCHEMA = None
@@ -49,6 +49,8 @@ class Intruder(Plugin):
     ATTACK = None
     THREADS = 5
 
+    author = "Davide Barbato"
+    description = "Simple bruteforce inspired by Burp Suite Intruder."
 
     def __init__(self):
         extra_argparser = argparse.ArgumentParser()

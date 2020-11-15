@@ -9,6 +9,9 @@ class Dump(Plugin):
     GQL_ENDPOINT = None
     CMD_NAME = "dump"
 
+    author = "Davide Barbato"
+    description = "Dump GraphQL schema via introspection."
+
     def __init__(self):
         dump_argparser = self.build_argparse()
         args = dump_argparser.parse_args()
