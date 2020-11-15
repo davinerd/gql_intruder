@@ -6,7 +6,7 @@ from time import time
 import argparse
 from concurrent.futures import as_completed
 from requests_futures.sessions import FuturesSession
-
+from plugin import Plugin
 
 
 class ElapsedFuturesSession(FuturesSession):
@@ -32,7 +32,7 @@ class ElapsedFuturesSession(FuturesSession):
 
 
 
-class Intruder:
+class Intruder(Plugin):
     ROOT_PAYLOAD_FOLDER = "{}/payloads".format(pathlib.Path().absolute())
 
     PAYLOADS_FOLDER = {
@@ -52,14 +52,15 @@ class Intruder:
 
     def __init__(self):
         extra_argparser = argparse.ArgumentParser()
-        extra_argparser.add_argument("--url", required=True)
         extra_argparser.add_argument("--max-threads", type=int)
         extra_argparser.add_argument("--key", required=True)
         extra_argparser.add_argument("--schema", required=True)
         extra_argparser.add_argument("--attack", required=True, type=str, choices=list(self.PAYLOADS_FOLDER.keys()))
         extra_argparser.add_argument("--type", type=str)
 
+        extra_argparser = self.build_argparse(extra_argparser)
         args = extra_argparser.parse_args()
+
         self.GQL_ENDPOINT = utils.parse_url(args.url)
         if self.GQL_ENDPOINT is None:
             print("URL {} is not valid!".format(args.url))
