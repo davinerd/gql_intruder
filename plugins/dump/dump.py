@@ -23,4 +23,10 @@ class Dump(Plugin):
     
     def attack(self):
         f = requests.post(self.GQL_ENDPOINT, headers=utils.set_request_headers(), json={"query": self.introspection_query})
-        print(json.dumps(f.json(), indent=4, sort_keys=True))
+
+        try:
+            output = json.dumps(f.json(), indent=4, sort_keys=True)
+        except Exception as e:
+            output = f.text
+
+        print(output)
